@@ -614,4 +614,467 @@ export default function App() {
                 {carrito.length === 0 ? (
                   <p className="text-sm text-pink-300/50 text-center py-12">No hay productos en el ticket actual.</p>
                 ) : (
-                  <div className="space-
+                  <div className="space-y-3 max-h-64 overflow-y-auto mb-4 pr-1">
+                    {carrito.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between bg-[#1c1224] p-3 rounded-xl border border-pink-500/20 text-sm gap-2">
+                        <div className="overflow-hidden pr-1">
+                          <span className="font-bold text-pink-100 block truncate">{item.nombre}</span>
+                          <span className="text-amber-300 text-xs font-extrabold">S/ {(item.precio * item.cantidad).toFixed(2)}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center bg-pink-950/60 rounded-lg border border-pink-500/30 overflow-hidden">
+                            <button onClick={() => cambiarCantidadCarrito(item.id, -1)} className="px-2 py-0.5 text-pink-300 hover:bg-pink-600 text-xs font-bold">-</button>
+                            <span className="px-2 text-xs font-bold text-white">{item.cantidad}</span>
+                            <button onClick={() => cambiarCantidadCarrito(item.id, 1)} className="px-2 py-0.5 text-pink-300 hover:bg-pink-600 text-xs font-bold">+</button>
+                          </div>
+                          <button 
+                            onClick={() => eliminarDelCarrito(item.id)}
+                            className="text-pink-400 hover:text-rose-400 text-xs font-bold px-2 py-1 bg-pink-500/10 rounded-lg"
+                            title="Quitar producto"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-pink-500/20 pt-4 mt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm font-bold text-pink-200">Total a Pagar:</span>
+                  <span className="text-2xl font-black text-amber-300">
+                    S/ {carrito.reduce((acc, curr) => acc + (curr.precio * curr.cantidad), 0).toFixed(2)}
+                  </span>
+                </div>
+                {!qrUsuario.configurado && esPro && (
+                  <p className="text-[11px] text-amber-300 font-bold mb-2 text-center bg-amber-500/10 p-2 rounded-xl border border-amber-500/30">
+                    ⚠️ Ingresa tu Yape/Plin arriba para habilitar cobros.
+                  </p>
+                )}
+                <button 
+                  disabled={carrito.length === 0}
+                  onClick={() => {
+                    const total = carrito.reduce((acc, curr) => acc + (curr.precio * curr.cantidad), 0);
+                    intentarGenerarQR(total, `Venta Mostrador (${carrito.reduce((a, c) => a + c.cantidad, 0)} items)`);
+                  }}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 text-white font-black py-3.5 rounded-2xl shadow-xl transition flex items-center justify-center gap-2 text-sm"
+                >
+                  💳 Generar Cobro QR Yape/Plin {esPro ? '' : '🔒 (PRO)'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {vistaActual === 'recetario' && (
+          <div className="space-y-8">
+            <div className="bg-[#261733] border-2 border-pink-500/40 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-black bg-gradient-to-r from-pink-400 to-amber-300 bg-clip-text text-transparent">
+                  📖 Recetario Viral ({recetasBase.length} Recetas)
+                </h2>
+                <p className="text-sm text-pink-200/90 mt-1">Clasificadas por red social y tipo de postre.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setModalNuevoProducto(true)}
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold px-4 py-2.5 rounded-xl shadow transition text-sm flex items-center gap-2"
+                >
+                  <span>➕</span> Añadir Receta
+                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => setFiltroCategoria('todas')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${filtroCategoria === 'todas' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>Todas</button>
+                  <button onClick={() => setFiltroCategoria('tiktok')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${filtroCategoria === 'tiktok' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>🔥 TikTok</button>
+                  <button onClick={() => setFiltroCategoria('instagram')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${filtroCategoria === 'instagram' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>📸 Instagram</button>
+                  <button onClick={() => setFiltroCategoria('app')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${filtroCategoria === 'app' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>👑 Recomendación de la App</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 bg-[#261733]/60 p-4 rounded-2xl border border-pink-500/20">
+              <span className="text-xs text-pink-300 font-bold self-center mr-2">Filtrar por Clase:</span>
+              <button onClick={() => setTipoFiltroClase('todos')} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${tipoFiltroClase === 'todos' ? 'bg-pink-600 text-white' : 'bg-[#261733] text-pink-300 border border-pink-500/30'}`}>Todos</button>
+              <button onClick={() => setTipoFiltroClase('Tortas')} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${tipoFiltroClase === 'Tortas' ? 'bg-pink-600 text-white' : 'bg-[#261733] text-pink-300 border border-pink-500/30'}`}>🎂 Tortas</button>
+              <button onClick={() => setTipoFiltroClase('Cupcakes')} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${tipoFiltroClase === 'Cupcakes' ? 'bg-pink-600 text-white' : 'bg-[#261733] text-pink-300 border border-pink-500/30'}`}>🧁 Cupcakes</button>
+              <button onClick={() => setTipoFiltroClase('Bebidas/Frappes')} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${tipoFiltroClase === 'Bebidas/Frappes' ? 'bg-pink-600 text-white' : 'bg-[#261733] text-pink-300 border border-pink-500/30'}`}>🥤 Frappes</button>
+              <button onClick={() => setTipoFiltroClase('Cookies')} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${tipoFiltroClase === 'Cookies' ? 'bg-pink-600 text-white' : 'bg-[#261733] text-pink-300 border border-pink-500/30'}`}>🍪 Cookies</button>
+              <button onClick={() => setTipoFiltroClase('Croissants')} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${tipoFiltroClase === 'Croissants' ? 'bg-pink-600 text-white' : 'bg-[#261733] text-pink-300 border border-pink-500/30'}`}>🥐 Croissants</button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recetasFiltradas.map(p => (
+                <div key={p.id} className="bg-[#261733] border-2 border-pink-500/30 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs bg-amber-500/20 text-amber-300 font-bold px-3 py-1 rounded-full border border-amber-500/30 uppercase">
+                        {p.categoria === 'tiktok' ? '🔥 TikTok' : p.categoria === 'instagram' ? '📸 Instagram' : '👑 Recomendación de la App'}
+                      </span>
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${p.dificultad === 'Fácil' ? 'bg-emerald-500/20 text-emerald-300' : p.dificultad === 'Intermedio' ? 'bg-amber-500/20 text-amber-300' : 'bg-rose-500/20 text-rose-300'}`}>
+                        {p.dificultad}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-2xl">{p.icono || '🧁'}</span>
+                      <h3 className="text-xl font-bold text-pink-200">{p.nombre}</h3>
+                    </div>
+                    <div className="mb-3">
+                      <span className="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-2.5 py-1 rounded-lg border border-purple-500/30">
+                        Clase: {p.clase}
+                      </span>
+                    </div>
+                    <p className="text-sm text-pink-300/80 mb-4">{p.desc}</p>
+                  </div>
+                  <button onClick={() => setModalReceta(p)} className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl shadow transition text-sm">
+                    📖 Leer Receta Detallada
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {vistaActual === 'suscripcion' && (
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black bg-gradient-to-r from-amber-300 to-pink-400 bg-clip-text text-transparent">
+                Elige tu Plan SeñaClara PRO ✨
+              </h2>
+              <p className="text-sm text-pink-200/90">Desbloquea 90+ recetas virales ilimitadas y POS avanzado.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-[#261733] border-2 border-pink-500/40 hover:border-pink-500 rounded-3xl p-8 shadow-2xl flex flex-col justify-between transition relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-pink-500 text-white font-black text-xs px-5 py-1.5 rounded-bl-2xl shadow">
+                  7 DÍAS GRATIS
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-pink-300 mb-2">Plan Mensual Pro</h3>
+                  <p className="text-sm text-pink-200/80 mb-6">Prueba 7 días gratis y luego S/ 19.00 / mes.</p>
+                  <div className="text-4xl font-black text-amber-300 mb-6">
+                    S/ 19.00 <span className="text-xs font-normal text-pink-300">/ mes</span>
+                  </div>
+                  <ul className="space-y-3 mb-8 text-sm text-pink-100">
+                    <li className="flex items-center gap-2"><span>✨</span> <strong>¡Incluye 7 días de prueba gratis!</strong></li>
+                    <li className="flex items-center gap-2"><span>✨</span> Creación ilimitada de productos propios</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Acceso a 90+ recetas virales</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Generador QR Yape/Plin ilimitado</li>
+                  </ul>
+                </div>
+                <button 
+                  onClick={() => setModalQR({ precio: 19.00, nombre: "Plan Mensual SeñaClara PRO (Prueba 7 Días Gratis)", itemsComprados: [] })}
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm"
+                >
+                  🎁 Activar 7 Días de Prueba Gratis
+                </button>
+              </div>
+
+              <div className="bg-[#261733] border-2 border-amber-400/60 hover:border-amber-400 rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition">
+                <div className="absolute top-0 right-0 bg-amber-400 text-amber-950 font-black text-xs px-6 py-1.5 rounded-bl-2xl shadow">
+                  ¡PLAN ANUAL!
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-amber-300 mb-2">Plan Anual Pro</h3>
+                  <p className="text-sm text-pink-200/80 mb-4">Pago único anual con acceso total e ininterrumpido.</p>
+                  <div className="text-4xl font-black text-amber-300 mb-6">
+                    S/ 199.00 <span className="text-xs font-normal text-pink-300">/ año</span>
+                  </div>
+                  <ul className="space-y-3 mb-8 text-sm text-pink-100">
+                    <li className="flex items-center gap-2"><span>✨</span> Todo lo incluido en el Plan Mensual</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Generador QR Yape/Plin ilimitado</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Soporte prioritario con Choco Mascota</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Actualizaciones exclusivas de temporada</li>
+                  </ul>
+                </div>
+                <button 
+                  onClick={() => setModalQR({ precio: 199.00, nombre: "Suscripción Anual SeñaClara PRO", itemsComprados: [] })}
+                  className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black py-3.5 rounded-2xl shadow-xl transition text-sm"
+                >
+                  👑 Activar Plan Anual PRO (S/ 199.00)
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {modalNuevoProducto && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#261733] border-2 border-pink-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onClick={() => setModalNuevoProducto(false)} className="absolute top-4 right-4 text-pink-300 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">✕</button>
+            
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">🧁</span>
+              <div>
+                <h3 className="text-xl font-bold text-pink-300">Añadir Nuevo Postre</h3>
+                {!esPro && (
+                  <p className="text-xs text-pink-300/80">Intentos gratuitos usados: {intentosPostresGratis}/3</p>
+                )}
+              </div>
+            </div>
+
+            <form onSubmit={agregarRecetaCustom} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-pink-300 mb-1">Nombre del Postre o Bebida:</label>
+                <input 
+                  type="text" 
+                  placeholder="Ej. Frappe de Fresa, Cupcake Vainilla..." 
+                  value={nuevaReceta.nombre} 
+                  onChange={(e) => setNuevaReceta({...nuevaReceta, nombre: e.target.value})}
+                  required 
+                  className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-3 text-pink-100 placeholder-pink-300/40 focus:outline-none focus:border-pink-400 text-sm" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-pink-300 mb-1">Precio Sugerido S/:</label>
+                <input 
+                  type="number" 
+                  step="0.5" 
+                  placeholder="Ej. 6.50" 
+                  value={nuevaReceta.precioSugerido} 
+                  onChange={(e) => setNuevaReceta({...nuevaReceta, precioSugerido: e.target.value})}
+                  required 
+                  className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-3 text-pink-100 placeholder-pink-300/40 focus:outline-none focus:border-pink-400 text-sm" 
+                />
+              </div>
+
+              <button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm mt-2">
+                {!esPro && intentosPostresGratis >= 3 ? "👑 Activar Plan Pro Ilimitado" : "💖 Guardar en el Catálogo"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {modalReceta && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#261733] border-2 border-pink-500/50 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onClick={() => setModalReceta(null)} className="absolute top-4 right-4 text-pink-300 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">✕</button>
+            
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">{modalReceta.icono || '🧁'}</span>
+              <div>
+                <h2 className="text-2xl font-bold text-pink-300">{modalReceta.nombre}</h2>
+                <span className="text-xs bg-purple-500/20 text-purple-300 font-bold px-3 py-0.5 rounded-full border border-purple-500/30 mt-1 inline-block">
+                  Clase: {modalReceta.clase}
+                </span>
+              </div>
+            </div>
+            <p className="text-amber-300 font-extrabold text-lg mb-4">Precio Recomendado: S/ {modalReceta.precio.toFixed(2)} (Ajustado para todos los bolsillos)</p>
+            <p className="text-sm text-pink-200/90 mb-6 bg-pink-950/40 p-4 rounded-2xl border border-pink-500/20">{modalReceta.desc}</p>
+            
+            <h3 className="text-md font-bold text-pink-300 mb-3">🛒 Ingredientes Detallados:</h3>
+            <ul className="mb-6 bg-[#1c1224] p-4 rounded-2xl border border-pink-500/20 space-y-2">
+              {modalReceta.ingredientes?.map((ing: string, i: number) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-pink-100">
+                  <span className="text-pink-400">🔹</span> {ing}
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="text-md font-bold text-pink-300 mb-3">👩‍🍳 Paso a Paso Extenso & Profesional:</h3>
+            <div className="space-y-3 mb-6">
+              {modalReceta.pasos?.map((paso: string, i: number) => (
+                <div key={i} className="bg-[#1c1224] border border-pink-500/20 p-4 rounded-2xl text-sm text-pink-200 leading-relaxed">
+                  {paso}
+                </div>
+              ))}
+            </div>
+
+            <button onClick={() => { const p = modalReceta.precio; const n = modalReceta.nombre; setModalReceta(null); intentarGenerarQR(p, n); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition text-sm">
+              💳 Generar Cobro Yape/Plin {esPro ? '' : '🔒 (PRO)'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {modalConfigurarQR && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#261733] border-2 border-pink-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onClick={() => setModalConfigurarQR(false)} className="absolute top-4 right-4 text-pink-300 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">✕</button>
+            
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">🔒</span>
+              <div>
+                <h3 className="text-xl font-bold text-pink-300">Configuración Segura Yape/Plin</h3>
+                <p className="text-xs text-pink-300/80">Protegido contra fraudes mediante código SMS.</p>
+              </div>
+            </div>
+
+            {pasoSeguridadQR === 'formulario' ? (
+              <form onSubmit={solicitarCodigoVerificacion} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-pink-300 mb-1">Número de Celular (Yape/Plin):</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ej. 987 654 321" 
+                    defaultValue={qrUsuario.numero}
+                    onChange={(e) => setInputNumQR(e.target.value)}
+                    required 
+                    className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-3 text-pink-100 placeholder-pink-300/40 focus:outline-none focus:border-pink-400 text-sm" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-pink-300 mb-1">Nombre de la Pastelería o Negocio:</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ej. Repostería Dulce Amor" 
+                    defaultValue={qrUsuario.nombreTitular}
+                    onChange={(e) => setInputNombreQR(e.target.value)}
+                    required 
+                    className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-3 text-pink-100 placeholder-pink-300/40 focus:outline-none focus:border-pink-400 text-sm" 
+                  />
+                </div>
+
+                <button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm mt-2">
+                  🔐 Solicitar Código de Verificación
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={verificarYGuardarQR} className="space-y-4 text-center">
+                <p className="text-xs text-pink-200">Hemos enviado un código de 4 dígitos a tu celular registrado para autorizar el cambio.</p>
+                <div className="my-3">
+                  <input 
+                    type="text" 
+                    placeholder="0 0 0 0" 
+                    value={codigoIngresado} 
+                    onChange={(e) => setCodigoIngresado(e.target.value)}
+                    maxLength={4}
+                    required 
+                    className="w-48 mx-auto bg-[#1c1224] border-2 border-pink-500 rounded-xl px-4 py-3 text-white text-xl tracking-[1em] font-black text-center focus:outline-none" 
+                  />
+                  <p className="text-[10px] text-amber-300 mt-2">Código simulado de prueba: <strong className="text-white">{codigoEnviadoSimulado}</strong></p>
+                </div>
+
+                <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm">
+                  ✅ Confirmar y Guardar Cambios
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {modalQR && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#261733] border-2 border-emerald-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl relative text-center">
+            <button onClick={() => setModalQR(null)} className="absolute top-4 right-4 text-emerald-300 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">✕</button>
+            
+            <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📱</div>
+            <h3 className="text-2xl font-bold text-emerald-300 mb-1">¡Código QR Generado! ✨</h3>
+            <p className="text-sm text-emerald-100/80 mb-4">Escanea con Yape, Plin o tu billetera favorita.</p>
+            
+            <div className="bg-white p-6 rounded-3xl inline-block shadow-inner mb-4 relative">
+              <div className="w-48 h-48 bg-slate-900 rounded-2xl flex flex-col items-center justify-center p-4 text-white relative overflow-hidden shadow-lg">
+                <div className="absolute inset-2 grid grid-cols-6 gap-1 opacity-90">
+                  <div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div>
+                  <div className="bg-white rounded-sm"></div><div className="bg-amber-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-amber-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div>
+                  <div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#1c1224] p-4 rounded-2xl border border-emerald-500/30 mb-6 text-left">
+              <div className="text-xs text-emerald-300 font-bold mb-1">Concepto: <span className="text-white">{modalQR.nombre}</span></div>
+              <div className="text-xs text-emerald-300 font-bold mb-1">Negocio: <span className="text-white">{qrUsuario.nombreTitular}</span></div>
+              <div className="text-xs text-emerald-300 font-bold mb-1">Celular: <span className="text-white">{qrUsuario.numero}</span></div>
+              
+              {modalQR.itemsComprados && modalQR.itemsComprados.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-emerald-500/20">
+                  <span className="text-xs text-emerald-300 font-bold block mb-1">Productos comprados:</span>
+                  <div className="space-y-1 max-h-24 overflow-y-auto">
+                    {modalQR.itemsComprados.map((it: any, idx: number) => (
+                      <div key={idx} className="flex justify-between text-[11px] text-pink-100">
+                        <span className="truncate pr-2">• {it.cantidad}x {it.nombre}</span>
+                        <span className="font-bold text-amber-300 shrink-0">S/ {(it.precio * it.cantidad).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-lg font-black text-amber-300 mt-3 pt-2 border-t border-emerald-500/20">Monto Total: S/ {modalQR.precio.toFixed(2)}</div>
+            </div>
+            
+            <button onClick={() => { 
+              const infoCobro = modalQR;
+              const esSuscripcion = infoCobro.nombre.includes("Plan") || infoCobro.nombre.includes("PRO");
+              setModalQR(null); 
+              
+              if (esSuscripcion) {
+                setEsPro(true);
+                setMostrarWidgetConfigQR(true);
+                setVistaActual('mostrador-pos');
+                mostrarNotificacion("👑 ¡Bienvenida a PRO! Configura tu Yape o Plin de pastelería abajo.");
+              } else {
+                setCarrito([]);
+                setTicketExitoso(infoCobro);
+              }
+            }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 text-white font-bold py-3.5 rounded-2xl shadow-lg transition text-sm">
+              ✅ Simular Pago Exitoso
+            </button>
+          </div>
+        </div>
+      )}
+
+      {ticketExitoso && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-[#7b1fa2] border-4 border-pink-400 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative text-center text-white overflow-hidden">
+            <button onClick={() => setTicketExitoso(null)} className="absolute top-4 right-4 text-pink-200 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-purple-900/60 flex items-center justify-center">✕</button>
+            
+            <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xl border-2 border-white relative">
+              <span className="text-3xl">🍫✨</span>
+              <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full w-7 h-7 flex items-center justify-center font-black text-xs border-2 border-white">
+                ✓
+              </div>
+            </div>
+
+            <div className="bg-emerald-500 text-slate-950 font-black text-xs uppercase px-3 py-1 rounded-full inline-block mb-3 shadow">
+              ¡Pago Exitoso en Recepción!
+            </div>
+
+            <h3 className="text-2xl font-black mb-1">¡Yapeado / Plineado!</h3>
+            <p className="text-xs text-pink-200 mb-4">La transacción ha sido verificada y abonada correctamente.</p>
+            
+            <div className="bg-purple-950/80 p-4 rounded-2xl border border-pink-500/30 mb-6 text-left space-y-2 text-xs">
+              <div className="flex justify-between"><span className="text-pink-300">Pastelería:</span> <span className="font-bold">{qrUsuario.nombreTitular}</span></div>
+              <div className="flex justify-between"><span className="text-pink-300">N° Celular:</span> <span className="font-bold">{qrUsuario.numero}</span></div>
+              
+              {ticketExitoso.itemsComprados && ticketExitoso.itemsComprados.length > 0 && (
+                <div className="pt-2 border-t border-purple-800">
+                  <span className="text-pink-300 font-bold block mb-1">Detalle de productos comprados:</span>
+                  <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                    {ticketExitoso.itemsComprados.map((it: any, idx: number) => (
+                      <div key={idx} className="flex justify-between text-[11px] text-pink-100 bg-purple-900/40 p-1.5 rounded-lg">
+                        <span className="truncate pr-2">{it.cantidad}x {it.nombre}</span>
+                        <span className="font-bold text-amber-300 shrink-0">S/ {(it.precio * it.cantidad).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between border-t border-purple-800 pt-2 mt-1">
+                <span className="text-pink-300 font-bold text-sm">Monto Total:</span> 
+                <span className="text-amber-300 font-black text-base">S/ {ticketExitoso.precio.toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <button onClick={() => setTicketExitoso(null)} className="w-full bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 text-purple-950 font-black py-3 rounded-2xl shadow-xl transition text-sm">
+              🎉 Aceptar y Nueva Venta
+            </button>
+          </div>
+        </div>
+      )}
+
+      <footer className="w-full max-w-7xl mx-auto text-center text-xs text-pink-300/60 py-6">
+        SeñaClara PRO &copy; 2026 — El POS Definitivo para Emprendedoras Exitosas 💖
+      </footer>
+    </div>
+  );
+}
