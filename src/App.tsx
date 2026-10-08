@@ -12,7 +12,7 @@ export default function App() {
   const consejosChoco = [
     "🍫 ¡Tip Pro! Compra insumos al por mayor una vez al mes para ahorrar hasta un 25% en costos.",
     "💡 Negocio: Las fotos con luz natural cerca de la ventana venden el doble en redes sociales.",
-    "✨ Seguridad: Pedir código de verificación para cambiar tu Yape/Plin evita fraudes en tienda física.",
+    "✨ Prueba Gratis: Permite que tus clientas prueben 1 semana sin compromiso para enamorarlas del sistema.",
     "💸 Finanzas: Separa siempre el dinero de tus insumos de tus ganancias personales.",
     "🌸 TikTok Tip: Muestra el relleno crujiente de pistacho en video, ¡es viral asegurado!",
     "🍰 Finanzas: Lleva el control diario de tus ventas en caja para evitar mermas fantasma."
@@ -32,36 +32,60 @@ export default function App() {
   };
 
   const [esPro, setEsPro] = useState(false);
+  const [diasPruebaRestantes, setDiasPruebaRestantes] = useState<number | null>(null);
   const [intentosPostresGratis, setIntentosPostresGratis] = useState(0);
   const [tipoFiltroClase, setTipoFiltroClase] = useState('todos');
 
-  // Detectar retorno exitoso de Mercado Pago mediante parámetro en URL (?pro=exitoso)
+  // Detectar retorno exitoso de Mercado Pago o verificar Prueba Gratuita activa
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('pro') === 'exitoso') {
       setEsPro(true);
       setMostrarWidgetConfigQR(true);
       setVistaActual('mostrador-pos');
+      localStorage.removeItem('senaclara_prueba_fin');
       mostrarNotificacion("👑 ¡Pago verificado en Mercado Pago con éxito! Configura tu Yape o Plin abajo.");
+      return;
+    }
+
+    // Verificar si hay una prueba gratuita activa en localStorage
+    const pruebaFin = localStorage.getItem('senaclara_prueba_fin');
+    if (pruebaFin) {
+      const tiempoRestante = parseInt(pruebaFin, 10) - Date.now();
+      if (tiempoRestante > 0) {
+        const dias = Math.ceil(tiempoRestante / (1000 * 60 * 60 * 24));
+        setEsPro(true);
+        setDiasPruebaRestantes(dias);
+      } else {
+        localStorage.removeItem('senaclara_prueba_fin');
+        setEsPro(false);
+        setDiasPruebaRestantes(null);
+      }
     }
   }, []);
 
-  // Estado para el QR o Formato de Pago Yape/Plin personal del usuario
+  const activarPruebaGratis = () => {
+    const unA_SemanaMs = 7 * 24 * 60 * 60 * 1000;
+    const tiempoFin = Date.now() + unA_SemanaMs;
+    localStorage.setItem('senaclara_prueba_fin', tiempoFin.toString());
+    setEsPro(true);
+    setDiasPruebaRestantes(7);
+    setMostrarWidgetConfigQR(true);
+    setVistaActual('mostrador-pos');
+    mostrarNotificacion("🎁 ¡Felicidades! Tienes 7 días de prueba PRO gratis activados.");
+  };
+
+  // Estado para el QR o Formato de Yape/Plin personal del usuario (Sin Fricciones)
   const [qrUsuario, setQrUsuario] = useState({
-    numero: '',
-    nombreTitular: '',
+    numero: '987 654 321',
+    nombreTitular: 'Mi Pastelería',
+    imagenQR: null as string | null,
     configurado: false
   });
   
   const [mostrarWidgetConfigQR, setMostrarWidgetConfigQR] = useState(false);
   const [inputNumQR, setInputNumQR] = useState('');
   const [inputNombreQR, setInputNombreQR] = useState('');
-
-  // Estados para flujo de seguridad con código de verificación
-  const [pasoSeguridadQR, setPasoSeguridadQR] = useState('formulario'); // 'formulario' o 'codigo'
-  const [codigoEnviadoSimulado, setCodigoEnviadoSimulado] = useState('');
-  const [codigoIngresado, setCodigoIngresado] = useState('');
-
   const [modalConfigurarQR, setModalConfigurarQR] = useState(false);
   
   // Modal de Ticket Exitoso Yape-style con Choco
@@ -165,7 +189,7 @@ export default function App() {
     e.preventDefault();
     if (!esPro) {
       if (intentosPostresGratis >= 3) {
-        mostrarNotificacion("👑 ¡Límite alcanzado! Necesitas el Plan Pro para agregar más postres.");
+        mostrarNotificacion("👑 ¡Límite alcanzado! Activa tu prueba de 1 semana o tu Plan Pro.");
         setModalNuevoProducto(false);
         setVistaActual('suscripcion');
         return;
@@ -196,7 +220,7 @@ export default function App() {
     if (!esPro && restan > 0) {
       mostrarNotificacion(`¡Añadido con éxito! Te quedan ${restan} intentos gratuitos.`);
     } else if (!esPro) {
-      mostrarNotificacion("¡Guardado! Has agotado tus 3 intentos gratuitos. Activa PRO.");
+      mostrarNotificacion("¡Guardado! Has agotado tus 3 intentos. Activa tu prueba de 1 semana.");
     } else {
       mostrarNotificacion("¡Guardado con éxito en tu catálogo!");
     }
@@ -247,12 +271,12 @@ export default function App() {
 
   const intentarGenerarQR = (precio: number, nombre: string) => {
     if (!esPro) {
-      mostrarNotificacion("👑 ¡Función exclusiva PRO! Necesitas el plan Pro para generar tu QR Yape/Plin.");
+      mostrarNotificacion("👑 ¡Función exclusiva PRO! Activa tu prueba de 1 semana gratis para usarlo.");
       setVistaActual('suscripcion');
       return;
     }
     if (!qrUsuario.configurado) {
-      mostrarNotificacion("⚠ ¡Atención! Debes registrar el QR o datos de tu Yape/Plin de pastelería primero para poder cobrar.");
+      mostrarNotificacion("⚠ ¡Atención! Registra tu número o sube tu foto QR de Yape/Plin primero.");
       setMostrarWidgetConfigQR(true);
       return;
     }
@@ -267,33 +291,35 @@ export default function App() {
 
   const productosRecomendadosPOS = recetasBase.slice(0, 10);
 
-  const solicitarCodigoVerificacion = (e: React.FormEvent) => {
+  const guardarQRFacil = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputNumQR || !inputNombreQR) return;
-    
-    const codigoAleatorio = Math.floor(1000 + Math.random() * 9000).toString();
-    setCodigoEnviadoSimulado(codigoAleatorio);
-    setPasoSeguridadQR('codigo');
-    mostrarNotificacion(`🔒 Código de seguridad enviado por SMS/WhatsApp al titular (Código simulado: ${codigoAleatorio})`);
-  };
 
-  const verificarYGuardarQR = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (codigoIngresado !== codigoEnviadoSimulado) {
-      mostrarNotificacion("❌ Código de verificación incorrecto. Inténtalo de nuevo.");
-      return;
-    }
-
-    setQrUsuario({
+    setQrUsuario(prev => ({
+      ...prev,
       numero: inputNumQR,
       nombreTitular: inputNombreQR,
       configurado: true
-    });
+    }));
     setMostrarWidgetConfigQR(false);
     setModalConfigurarQR(false);
-    setPasoSeguridadQR('formulario');
-    setCodigoIngresado('');
-    mostrarNotificacion("✨ ¡Identidad verificada! Yape/Plin de pastelería actualizado con éxito.");
+    mostrarNotificacion("✨ ¡Yape y Plin configurados con éxito!");
+  };
+
+  const manejarSubidaImagenQR = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const archivo = e.target.files?.[0];
+    if (archivo) {
+      const lector = new FileReader();
+      lector.onloadend = () => {
+        setQrUsuario(prev => ({
+          ...prev,
+          imagenQR: lector.result as string,
+          configurado: true
+        }));
+        mostrarNotificacion("📸 ¡Imagen de tu QR de Yape/Plin cargada con éxito!");
+      };
+      lector.readAsDataURL(archivo);
+    }
   };
 
   return (
@@ -338,7 +364,7 @@ export default function App() {
                   onClick={() => { setVistaActual('suscripcion'); setMenuAbierto(false); }} 
                   className={`w-full text-left font-bold px-4 py-3 rounded-xl transition flex items-center gap-3 ${vistaActual === 'suscripcion' ? 'bg-pink-600 text-white shadow-lg' : 'hover:bg-pink-500/20 text-pink-300'}`}
                 >
-                  <span>👑</span> Suscripción PRO
+                  <span>👑</span> Suscripción PRO {diasPruebaRestantes && <span className="text-[10px] bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full ml-auto">¡Prueba {diasPruebaRestantes}d!</span>}
                 </button>
               </nav>
             </div>
@@ -346,7 +372,7 @@ export default function App() {
             <div className="bg-[#1c1224] p-4 rounded-2xl border border-pink-500/20 text-center space-y-2">
               <p className="text-xs text-pink-300/80">Versión 2.0 Definitiva</p>
               {esPro && (
-                <button onClick={() => { setPasoSeguridadQR('formulario'); setModalConfigurarQR(true); setMenuAbierto(false); }} className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-2">
+                <button onClick={() => { setModalConfigurarQR(true); setMenuAbierto(false); }} className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-2">
                   <span>📱</span> Configurar / Cambiar Yape & Plin
                 </button>
               )}
@@ -432,7 +458,9 @@ export default function App() {
             <button onClick={() => setVistaActual('catalogo')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${vistaActual === 'catalogo' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>Catálogo</button>
             <button onClick={() => setVistaActual('mostrador-pos')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${vistaActual === 'mostrador-pos' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>Mostrador POS</button>
             <button onClick={() => setVistaActual('recetario')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${vistaActual === 'recetario' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>Recetario Viral (90+)</button>
-            <button onClick={() => setVistaActual('suscripcion')} className={`px-4 py-2 rounded-xl text-sm font-bold transition ${vistaActual === 'suscripcion' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>Suscripción</button>
+            <button onClick={() => setVistaActual('suscripcion')} className={`px-4 py-2 rounded-xl text-sm font-bold transition relative ${vistaActual === 'suscripcion' ? 'bg-pink-600 text-white' : 'bg-[#1c1224] text-pink-300 border border-pink-500/30'}`}>
+              Suscripción {diasPruebaRestantes && <span className="absolute -top-2 -right-2 bg-amber-400 text-amber-950 text-[9px] font-black px-1.5 py-0.5 rounded-full">Prueba</span>}
+            </button>
           </div>
         </div>
       </header>
@@ -441,51 +469,24 @@ export default function App() {
         <div className="w-full max-w-7xl mx-auto px-4 mb-6">
           <div className="bg-gradient-to-r from-pink-900/80 via-[#261733] to-purple-900/80 border-2 border-pink-400 rounded-3xl p-6 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl shrink-0 border border-pink-400/40">🔒</div>
+              <div className="w-14 h-14 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl shrink-0 border border-pink-400/40">📱</div>
               <div>
-                <h3 className="text-lg font-bold text-pink-200">🛡️ Configuración Segura de Yape / Plin</h3>
-                <p className="text-xs text-pink-300/90">Para evitar fraudes o cambios no autorizados, cada cambio requerirá un código de verificación SMS/WhatsApp.</p>
+                <h3 className="text-lg font-bold text-pink-200">
+                  {diasPruebaRestantes ? `🎁 ¡Prueba PRO Activa (${diasPruebaRestantes} días restantes)!` : "⚡ Configura tu Yape / Plin al Instante"}
+                </h3>
+                <p className="text-xs text-pink-300/90">Sube la foto de tu QR o ingresa tus datos para empezar a cobrar sin demoras.</p>
               </div>
             </div>
 
-            {pasoSeguridadQR === 'formulario' ? (
-              <form onSubmit={solicitarCodigoVerificacion} className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <input 
-                  type="text" 
-                  placeholder="N° Celular (Yape/Plin)" 
-                  value={inputNumQR} 
-                  onChange={(e) => setInputNumQR(e.target.value)} 
-                  required 
-                  className="bg-[#1c1224] border border-pink-500/40 rounded-xl px-4 py-2.5 text-pink-100 placeholder-pink-300/40 text-xs focus:outline-none focus:border-pink-300"
-                />
-                <input 
-                  type="text" 
-                  placeholder="Nombre de Pastelería / Negocio" 
-                  value={inputNombreQR} 
-                  onChange={(e) => setInputNombreQR(e.target.value)} 
-                  required 
-                  className="bg-[#1c1224] border border-pink-500/40 rounded-xl px-4 py-2.5 text-pink-100 placeholder-pink-300/40 text-xs focus:outline-none focus:border-pink-300"
-                />
-                <button type="submit" className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black px-5 py-2.5 rounded-xl shadow text-xs transition whitespace-nowrap">
-                  🔐 Enviar Código de Seguridad
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={verificarYGuardarQR} className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
-                <input 
-                  type="text" 
-                  placeholder="Ingresa código de 4 dígitos" 
-                  value={codigoIngresado} 
-                  onChange={(e) => setCodigoIngresado(e.target.value)} 
-                  maxLength={4}
-                  required 
-                  className="bg-[#1c1224] border border-pink-500/40 rounded-xl px-4 py-2.5 text-pink-100 placeholder-pink-300/40 text-xs tracking-widest font-black text-center focus:outline-none focus:border-pink-300 w-48"
-                />
-                <button type="submit" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 text-white font-black px-5 py-2.5 rounded-xl shadow text-xs transition whitespace-nowrap">
-                  ✅ Verificar y Guardar
-                </button>
-              </form>
-            )}
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
+              <label className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-black px-5 py-3 rounded-xl shadow text-xs transition cursor-pointer text-center">
+                📁 Subir foto de mi QR
+                <input type="file" accept="image/*" onChange={manejarSubidaImagenQR} className="hidden" />
+              </label>
+              <button onClick={() => setModalConfigurarQR(true)} className="bg-[#1c1224] hover:bg-pink-500/25 text-pink-200 border border-pink-400/50 font-bold px-5 py-3 rounded-xl shadow text-xs transition whitespace-nowrap">
+                ✍️ Escribir Número y Nombre
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -667,7 +668,7 @@ export default function App() {
                 </div>
                 {!qrUsuario.configurado && esPro && (
                   <p className="text-[11px] text-amber-300 font-bold mb-2 text-center bg-amber-500/10 p-2 rounded-xl border border-amber-500/30">
-                    ⚠️ Ingresa tu Yape/Plin arriba para habilitar cobros.
+                    ⚠️ Sube tu QR o ingresa tu Yape/Plin arriba para habilitar cobros.
                   </p>
                 )}
                 <button 
@@ -759,6 +760,19 @@ export default function App() {
                 Elige tu Plan SeñaClara PRO ✨
               </h2>
               <p className="text-sm text-pink-200/90">Desbloquea 90+ recetas virales ilimitadas y POS avanzado.</p>
+            </div>
+
+            {/* Banner de Prueba Gratuita */}
+            <div className="bg-gradient-to-r from-pink-600 via-purple-600 to-pink-600 border-2 border-pink-300 rounded-3xl p-6 shadow-2xl text-center space-y-3">
+              <span className="text-3xl">🎁</span>
+              <h3 className="text-xl font-black text-white">¿Quieres probar todas las funciones PRO sin pagar nada?</h3>
+              <p className="text-xs text-pink-100 max-w-xl mx-auto">Activa una prueba gratuita de 1 semana completa al instante. Prueba el POS, sube tu QR de Yape/Plin y revisa las 90+ recetas.</p>
+              <button 
+                onClick={activarPruebaGratis}
+                className="bg-amber-400 hover:bg-amber-300 text-amber-950 font-black px-8 py-3.5 rounded-2xl shadow-xl transition transform hover:scale-105 text-sm inline-block"
+              >
+                🚀 Activar Prueba Gratis de 1 Semana
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -863,7 +877,7 @@ export default function App() {
               </div>
 
               <button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm mt-2">
-                {!esPro && intentosPostresGratis >= 3 ? "👑 Activar Plan Pro Ilimitado" : "💖 Guardar en el Catálogo"}
+                {!esPro && intentosPostresGratis >= 3 ? "👑 Activar Prueba Gratis o Plan Pro" : "💖 Guardar en el Catálogo"}
               </button>
             </form>
           </div>
@@ -918,64 +932,53 @@ export default function App() {
             <button onClick={() => setModalConfigurarQR(false)} className="absolute top-4 right-4 text-pink-300 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">✕</button>
             
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl">🔒</span>
+              <span className="text-3xl">📱</span>
               <div>
-                <h3 className="text-xl font-bold text-pink-300">Configuración Segura Yape/Plin</h3>
-                <p className="text-xs text-pink-300/80">Protegido contra fraudes mediante código SMS.</p>
+                <h3 className="text-xl font-bold text-pink-300">Yape / Plin sin Fricciones</h3>
+                <p className="text-xs text-pink-300/80">Sube tu foto QR o ingresa tus datos rápidamente.</p>
               </div>
             </div>
 
-            {pasoSeguridadQR === 'formulario' ? (
-              <form onSubmit={solicitarCodigoVerificacion} className="space-y-4">
+            <div className="space-y-4">
+              <div className="bg-[#1c1224] p-4 rounded-2xl border border-pink-500/20 text-center">
+                <p className="text-xs text-pink-200 mb-3 font-bold">Opción 1: Sube la captura de tu QR</p>
+                <label className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 text-white font-black px-6 py-2.5 rounded-xl shadow text-xs transition cursor-pointer">
+                  📁 Seleccionar imagen QR
+                  <input type="file" accept="image/*" onChange={(e) => { manejarSubidaImagenQR(e); setModalConfigurarQR(false); }} className="hidden" />
+                </label>
+              </div>
+
+              <div className="text-center text-xs text-pink-300 font-bold">— O —</div>
+
+              <form onSubmit={guardarQRFacil} className="space-y-3">
+                <p className="text-xs text-pink-200 font-bold">Opción 2: Ingresa tu número y negocio</p>
                 <div>
-                  <label className="block text-xs font-bold text-pink-300 mb-1">Número de Celular (Yape/Plin):</label>
                   <input 
                     type="text" 
-                    placeholder="Ej. 987 654 321" 
+                    placeholder="Celular (Ej. 987 654 321)" 
                     defaultValue={qrUsuario.numero}
                     onChange={(e) => setInputNumQR(e.target.value)}
                     required 
-                    className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-3 text-pink-100 placeholder-pink-300/40 focus:outline-none focus:border-pink-400 text-sm" 
+                    className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-2.5 text-pink-100 placeholder-pink-300/40 text-xs focus:outline-none focus:border-pink-400" 
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-pink-300 mb-1">Nombre de la Pastelería o Negocio:</label>
                   <input 
                     type="text" 
-                    placeholder="Ej. Repostería Dulce Amor" 
+                    placeholder="Nombre del Negocio (Ej. Dulce Tentación)" 
                     defaultValue={qrUsuario.nombreTitular}
                     onChange={(e) => setInputNombreQR(e.target.value)}
                     required 
-                    className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-3 text-pink-100 placeholder-pink-300/40 focus:outline-none focus:border-pink-400 text-sm" 
+                    className="w-full bg-[#1c1224] border border-pink-500/30 rounded-xl px-4 py-2.5 text-pink-100 placeholder-pink-300/40 text-xs focus:outline-none focus:border-pink-400" 
                   />
                 </div>
 
-                <button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm mt-2">
-                  🔐 Solicitar Código de Verificación
+                <button type="submit" className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black py-3 rounded-xl shadow-xl transition text-xs mt-1">
+                  ✅ Guardar Datos al Instante
                 </button>
               </form>
-            ) : (
-              <form onSubmit={verificarYGuardarQR} className="space-y-4 text-center">
-                <p className="text-xs text-pink-200">Hemos enviado un código de 4 dígitos a tu celular registrado para autorizar el cambio.</p>
-                <div className="my-3">
-                  <input 
-                    type="text" 
-                    placeholder="0 0 0 0" 
-                    value={codigoIngresado} 
-                    onChange={(e) => setCodigoIngresado(e.target.value)}
-                    maxLength={4}
-                    required 
-                    className="w-48 mx-auto bg-[#1c1224] border-2 border-pink-500 rounded-xl px-4 py-3 text-white text-xl tracking-[1em] font-black text-center focus:outline-none" 
-                  />
-                  <p className="text-[10px] text-amber-300 mt-2">Código simulado de prueba: <strong className="text-white">{codigoEnviadoSimulado}</strong></p>
-                </div>
-
-                <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm">
-                  ✅ Confirmar y Guardar Cambios
-                </button>
-              </form>
-            )}
+            </div>
           </div>
         </div>
       )}
@@ -986,23 +989,24 @@ export default function App() {
             <button onClick={() => setModalQR(null)} className="absolute top-4 right-4 text-emerald-300 hover:text-white text-xl font-bold w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">✕</button>
             
             <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📱</div>
-            <h3 className="text-2xl font-bold text-emerald-300 mb-1">¡Código QR Generado! ✨</h3>
-            <p className="text-sm text-emerald-100/80 mb-4">Escanea con Yape, Plin o tu billetera favorita.</p>
+            <h3 className="text-2xl font-bold text-emerald-300 mb-1">¡Cobro Yape / Plin Listo! ✨</h3>
+            <p className="text-sm text-emerald-100/80 mb-4">Escanea para pagar directamente.</p>
             
-            <div className="bg-white p-6 rounded-3xl inline-block shadow-inner mb-4 relative">
-              <div className="w-48 h-48 bg-slate-900 rounded-2xl flex flex-col items-center justify-center p-4 text-white relative overflow-hidden shadow-lg">
-                <div className="absolute inset-2 grid grid-cols-6 gap-1 opacity-90">
-                  <div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div>
-                  <div className="bg-white rounded-sm"></div><div className="bg-amber-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-amber-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div>
-                  <div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div><div className="bg-pink-400 rounded-sm"></div><div className="bg-white rounded-sm"></div>
+            <div className="bg-white p-4 rounded-3xl inline-block shadow-inner mb-4 relative">
+              {qrUsuario.imagenQR ? (
+                <img src={qrUsuario.imagenQR} alt="QR Yape/Plin" className="w-48 h-48 object-contain mx-auto rounded-xl" />
+              ) : (
+                <div className="w-48 h-48 bg-slate-900 rounded-2xl flex flex-col items-center justify-center p-4 text-white relative overflow-hidden shadow-lg">
+                  <span className="text-xs text-pink-300 font-bold mb-2">YAPE / PLIN</span>
+                  <div className="text-xl font-black text-amber-300">{qrUsuario.numero}</div>
+                  <div className="text-[10px] text-pink-200 mt-1">{qrUsuario.nombreTitular}</div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="bg-[#1c1224] p-4 rounded-2xl border border-emerald-500/30 mb-6 text-left">
               <div className="text-xs text-emerald-300 font-bold mb-1">Concepto: <span className="text-white">{modalQR.nombre}</span></div>
-              <div className="text-xs text-emerald-300 font-bold mb-1">Negocio: <span className="text-white">{qrUsuario.nombreTitular}</span></div>
-              <div className="text-xs text-emerald-300 font-bold mb-1">Celular: <span className="text-white">{qrUsuario.numero}</span></div>
+              <div className="text-xs text-emerald-300 font-bold mb-1">Titular: <span className="text-white">{qrUsuario.nombreTitular}</span> (Cel: {qrUsuario.numero})</div>
               
               {modalQR.itemsComprados && modalQR.itemsComprados.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-emerald-500/20">
