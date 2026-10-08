@@ -351,7 +351,7 @@ export default function App() {
                 </button>
               )}
               <a 
-                href="https://mpago.la/1vhUN9j" 
+                href="https://mpago.la/1xvFsGd" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="block w-full bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-black py-2.5 rounded-xl text-xs shadow text-center"
@@ -764,7 +764,7 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-[#261733] border-2 border-pink-500/40 hover:border-pink-500 rounded-3xl p-8 shadow-2xl flex flex-col justify-between transition relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-pink-500 text-white font-black text-xs px-5 py-1.5 rounded-bl-2xl shadow">
-                  PAGO SEGURO
+                  YAPE / PLIN / TARJETA
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-pink-300 mb-2">Plan Mensual Pro</h3>
@@ -773,14 +773,14 @@ export default function App() {
                     S/ 19.00 <span className="text-xs font-normal text-pink-300">/ mes</span>
                   </div>
                   <ul className="space-y-3 mb-8 text-sm text-pink-100">
-                    <li className="flex items-center gap-2"><span>✨</span> Procesamiento seguro con Mercado Pago</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Acepta Yape, Plin, Efectivo y Tarjetas</li>
                     <li className="flex items-center gap-2"><span>✨</span> Creación ilimitada de productos propios</li>
                     <li className="flex items-center gap-2"><span>✨</span> Acceso a 90+ recetas virales</li>
                     <li className="flex items-center gap-2"><span>✨</span> Generador QR Yape/Plin ilimitado</li>
                   </ul>
                 </div>
                 <a 
-                  href="https://mpago.la/2m8h13h" 
+                  href="https://mpago.la/1jH17gk" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm text-center"
@@ -791,23 +791,23 @@ export default function App() {
 
               <div className="bg-[#261733] border-2 border-amber-400/60 hover:border-amber-400 rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition">
                 <div className="absolute top-0 right-0 bg-amber-400 text-amber-950 font-black text-xs px-6 py-1.5 rounded-bl-2xl shadow">
-                  ¡PLAN ANUAL!
+                  ¡PLAN ANUAL COMPLETO!
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-amber-300 mb-2">Plan Anual Pro</h3>
-                  <p className="text-sm text-pink-200/80 mb-4">Pago único anual con acceso total e ininterrumpido.</p>
+                  <p className="text-sm text-pink-200/80 mb-4">Pago único por todo el año con acceso total e ininterrumpido.</p>
                   <div className="text-4xl font-black text-amber-300 mb-6">
                     S/ 199.00 <span className="text-xs font-normal text-pink-300">/ año</span>
                   </div>
                   <ul className="space-y-3 mb-8 text-sm text-pink-100">
-                    <li className="flex items-center gap-2"><span>✨</span> Todo lo incluido en el Plan Mensual</li>
-                    <li className="flex items-center gap-2"><span>✨</span> Generador QR Yape/Plin ilimitado</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Acepta Yape, Plin, Efectivo y Tarjetas</li>
+                    <li className="flex items-center gap-2"><span>✨</span> Acceso completo por 12 meses</li>
                     <li className="flex items-center gap-2"><span>✨</span> Soporte prioritario con Choco Mascota</li>
                     <li className="flex items-center gap-2"><span>✨</span> Actualizaciones exclusivas de temporada</li>
                   </ul>
                 </div>
                 <a 
-                  href="https://mpago.la/1vhUN9j" 
+                  href="https://mpago.la/1xvFsGd" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black py-3.5 rounded-2xl shadow-xl transition text-sm text-center"
