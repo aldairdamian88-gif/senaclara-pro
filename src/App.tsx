@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function App() {
   const [vistaActual, setVistaActual] = useState('mostrador-pos');
@@ -34,6 +34,17 @@ export default function App() {
   const [esPro, setEsPro] = useState(false);
   const [intentosPostresGratis, setIntentosPostresGratis] = useState(0);
   const [tipoFiltroClase, setTipoFiltroClase] = useState('todos');
+
+  // Detectar retorno exitoso de Mercado Pago mediante parámetro en URL (?pro=exitoso)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pro') === 'exitoso') {
+      setEsPro(true);
+      setMostrarWidgetConfigQR(true);
+      setVistaActual('mostrador-pos');
+      mostrarNotificacion("👑 ¡Pago verificado en Mercado Pago con éxito! Configura tu Yape o Plin abajo.");
+    }
+  }, []);
 
   // Estado para el QR o Formato de Pago Yape/Plin personal del usuario
   const [qrUsuario, setQrUsuario] = useState({
@@ -339,9 +350,14 @@ export default function App() {
                   <span>📱</span> Configurar / Cambiar Yape & Plin
                 </button>
               )}
-              <button onClick={() => { setModalQR({ precio: 199.00, nombre: "Activación Plan Pro Anual", itemsComprados: [] }); setMenuAbierto(false); }} className="w-full bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-black py-2.5 rounded-xl text-xs shadow">
-                ✨ Activar PRO Anual
-              </button>
+              <a 
+                href="https://mpago.la/1vhUN9j" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="block w-full bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-black py-2.5 rounded-xl text-xs shadow text-center"
+              >
+                ✨ Activar PRO Anual (Mercado Pago)
+              </a>
             </div>
           </aside>
         </div>
@@ -748,27 +764,29 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-[#261733] border-2 border-pink-500/40 hover:border-pink-500 rounded-3xl p-8 shadow-2xl flex flex-col justify-between transition relative overflow-hidden">
                 <div className="absolute top-0 right-0 bg-pink-500 text-white font-black text-xs px-5 py-1.5 rounded-bl-2xl shadow">
-                  7 DÍAS GRATIS
+                  PAGO SEGURO
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-pink-300 mb-2">Plan Mensual Pro</h3>
-                  <p className="text-sm text-pink-200/80 mb-6">Prueba 7 días gratis y luego S/ 19.00 / mes.</p>
+                  <p className="text-sm text-pink-200/80 mb-6">Acceso total por S/ 19.00 / mes mediante Mercado Pago.</p>
                   <div className="text-4xl font-black text-amber-300 mb-6">
                     S/ 19.00 <span className="text-xs font-normal text-pink-300">/ mes</span>
                   </div>
                   <ul className="space-y-3 mb-8 text-sm text-pink-100">
-                    <li className="flex items-center gap-2"><span>✨</span> <strong>¡Incluye 7 días de prueba gratis!</strong></li>
+                    <li className="flex items-center gap-2"><span>✨</span> Procesamiento seguro con Mercado Pago</li>
                     <li className="flex items-center gap-2"><span>✨</span> Creación ilimitada de productos propios</li>
                     <li className="flex items-center gap-2"><span>✨</span> Acceso a 90+ recetas virales</li>
                     <li className="flex items-center gap-2"><span>✨</span> Generador QR Yape/Plin ilimitado</li>
                   </ul>
                 </div>
-                <button 
-                  onClick={() => setModalQR({ precio: 19.00, nombre: "Plan Mensual SeñaClara PRO (Prueba 7 Días Gratis)", itemsComprados: [] })}
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm"
+                <a 
+                  href="https://mpago.la/2m8h13h" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-black py-3.5 rounded-2xl shadow-xl transition text-sm text-center"
                 >
-                  🎁 Activar 7 Días de Prueba Gratis
-                </button>
+                  💳 Pagar Plan Mensual (Mercado Pago)
+                </a>
               </div>
 
               <div className="bg-[#261733] border-2 border-amber-400/60 hover:border-amber-400 rounded-3xl p-8 shadow-2xl flex flex-col justify-between relative overflow-hidden transition">
@@ -788,12 +806,14 @@ export default function App() {
                     <li className="flex items-center gap-2"><span>✨</span> Actualizaciones exclusivas de temporada</li>
                   </ul>
                 </div>
-                <button 
-                  onClick={() => setModalQR({ precio: 199.00, nombre: "Suscripción Anual SeñaClara PRO", itemsComprados: [] })}
-                  className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black py-3.5 rounded-2xl shadow-xl transition text-sm"
+                <a 
+                  href="https://mpago.la/1vhUN9j" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black py-3.5 rounded-2xl shadow-xl transition text-sm text-center"
                 >
-                  👑 Activar Plan Anual PRO (S/ 199.00)
-                </button>
+                  👑 Pagar Plan Anual PRO (Mercado Pago)
+                </a>
               </div>
             </div>
           </div>
@@ -1003,20 +1023,11 @@ export default function App() {
             
             <button onClick={() => { 
               const infoCobro = modalQR;
-              const esSuscripcion = infoCobro.nombre.includes("Plan") || infoCobro.nombre.includes("PRO");
               setModalQR(null); 
-              
-              if (esSuscripcion) {
-                setEsPro(true);
-                setMostrarWidgetConfigQR(true);
-                setVistaActual('mostrador-pos');
-                mostrarNotificacion("👑 ¡Bienvenida a PRO! Configura tu Yape o Plin de pastelería abajo.");
-              } else {
-                setCarrito([]);
-                setTicketExitoso(infoCobro);
-              }
+              setCarrito([]);
+              setTicketExitoso(infoCobro);
             }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 text-white font-bold py-3.5 rounded-2xl shadow-lg transition text-sm">
-              ✅ Simular Pago Exitoso
+              ✅ Simular Pago Exitoso (POS)
             </button>
           </div>
         </div>
